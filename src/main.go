@@ -20,6 +20,8 @@ type Game struct {
 	degreeFreedom float32 // amount of error you can have on input
 	gameOver      bool
 
+	touches []ebiten.TouchID
+
 	debugText string
 	debugshow bool
 	debugAuto bool
@@ -37,6 +39,7 @@ type Game struct {
 }
 
 func (g *Game) Update() error {
+
 	// Debug / settings
 	//
 	//
@@ -71,7 +74,6 @@ func (g *Game) Update() error {
 		}
 	} else {
 		// adjust pin count
-
 		if inpututil.IsKeyJustPressed(ebiten.KeyArrowUp) {
 			if ebiten.IsKeyPressed(ebiten.KeyShift) {
 				g.pinMaxCount += 10
@@ -102,8 +104,9 @@ func (g *Game) Update() error {
 	//
 	//
 	// TODO prosses click
-	// activate pin - mouse click or keyboard space
-	if inpututil.IsKeyJustPressed(ebiten.KeySpace) || inpututil.IsMouseButtonJustPressed(ebiten.MouseButton0) {
+	// activate pin - mouse click or keyboard space or screen touch
+	g.touches = inpututil.AppendJustPressedTouchIDs(g.touches)
+	if inpututil.IsKeyJustPressed(ebiten.KeySpace) || inpututil.IsMouseButtonJustPressed(ebiten.MouseButton0) || len(g.touches) > 0 {
 		g.debugText += "Clicked\n"
 		// hit pin
 		if math.Abs(g.pickPositon-g.pinPosition) <= float64(g.degreeFreedom) {
@@ -121,6 +124,7 @@ func (g *Game) Update() error {
 	if !g.gameOver {
 		g.pickPositon += g.pickSpeed
 	}
+	g.touches = []ebiten.TouchID{}
 
 	return nil
 
